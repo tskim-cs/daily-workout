@@ -24,7 +24,7 @@ public class Guide {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    public Guide createGuide(String trainer, Workout workout, String content) {
+    public static Guide createGuide(String trainer, Workout workout, String content) {
         Guide guide = new Guide();
         guide.trainer = trainer;
         guide.workout = workout;
