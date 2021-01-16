@@ -3,7 +3,9 @@ package workout.dailyworkout.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import workout.dailyworkout.domain.Record;
 import workout.dailyworkout.domain.Workout;
+import workout.dailyworkout.repository.RecordRepository;
 import workout.dailyworkout.repository.WorkoutRepository;
 
 import java.time.LocalDateTime;
@@ -15,6 +17,7 @@ import java.util.List;
 public class WorkoutService {
 
     private final WorkoutRepository workoutRepository;
+    private final RecordRepository recordRepository;
 
     @Transactional
     public Long addWorkout(Workout workout) {
@@ -45,4 +48,13 @@ public class WorkoutService {
         Workout workout = workoutRepository.findById(id);
         workout.updateWorkoutName(name);
     }
+
+    public Record getLastRecord(Long id) {
+        Workout workout = workoutRepository.findById(id);
+        List<Record> records = recordRepository.findByWorkout(workout);
+        return records.size() > 0 ? records.get(records.size() - 1) : null;
+    }
+
+    // TODO
+    // public Record getRecentDayRecord(Long id) {}
 }
