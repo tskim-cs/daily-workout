@@ -1,6 +1,5 @@
 package workout.dailyworkout.service;
 
-import org.apache.tomcat.jni.Local;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +8,9 @@ import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import workout.dailyworkout.domain.Record;
-import workout.dailyworkout.domain.Workout;
-import workout.dailyworkout.domain.WorkoutEquip;
-import workout.dailyworkout.domain.WorkoutPart;
+import workout.dailyworkout.domain.Exercise;
+import workout.dailyworkout.domain.ExerciseEquip;
+import workout.dailyworkout.domain.ExerciseType;
 import workout.dailyworkout.repository.RecordRepository;
 
 import java.time.LocalDateTime;
@@ -32,38 +31,38 @@ public class RecordServiceTest {
     RecordRepository recordRepository;
 
     @Autowired
-    WorkoutService workoutService;
+    ExerciseService exerciseService;
 
-    public Workout addWorkout() throws Exception {
-        Workout workout = Workout.createWorkout("squat", WorkoutPart.LEGS, WorkoutEquip.BARBELL);
-        Long id = workoutService.addWorkout(workout);
-        return workout;
+    public Exercise addWorkout() throws Exception {
+        Exercise exercise = Exercise.createExercise("squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
+        Long id = exerciseService.addExercise(exercise);
+        return exercise;
     }
 
     @Test
     public void addRecord() throws Exception {
         // Given
-        Workout workout = addWorkout();
-        Record record = Record.createRecord(workout, 50, 15, LocalDateTime.now());
+        Exercise exercise = addWorkout();
+        Record record = Record.createRecord(exercise, 50, 15, LocalDateTime.now());
 
         // When
         Long id = recordService.addRecord(record);
 
         // Then
         assertEquals(record, recordService.findOne(id));
-        assertEquals(workout, record.getWorkout());
-        assertEquals(record, workoutService.getLastRecord(workout.getId()));
+        assertEquals(exercise, record.getExercise());
+        assertEquals(record, exerciseService.getLastRecord(exercise.getId()));
     }
 
     @Test
     public void addRecords() throws Exception {
         // Given
-        Workout workout = addWorkout();
+        Exercise exercise = addWorkout();
 
         // When
-        Long id = recordService.addRecord(Record.createRecord(workout, 50, 15, LocalDateTime.now()));
-        Long id2 = recordService.addRecord(Record.createRecord(workout, 50, 15, LocalDateTime.now()));
-        Long id3 = recordService.addRecord(Record.createRecord(workout, 50, 15, LocalDateTime.now()));
+        Long id = recordService.addRecord(Record.createRecord(exercise, 50, 15, LocalDateTime.now()));
+        Long id2 = recordService.addRecord(Record.createRecord(exercise, 50, 15, LocalDateTime.now()));
+        Long id3 = recordService.addRecord(Record.createRecord(exercise, 50, 15, LocalDateTime.now()));
 
         // Then
         List<Record> records = recordRepository.findAll();
@@ -73,41 +72,41 @@ public class RecordServiceTest {
     @Test
     public void getLastRecord() throws Exception {
         // Given
-        Workout workout = addWorkout();
+        Exercise exercise = addWorkout();
 
         // When
-        Long id = recordService.addRecord(Record.createRecord(workout, 50, 15, LocalDateTime.now()));
-        Long id2 = recordService.addRecord(Record.createRecord(workout, 50, 15, LocalDateTime.now()));
-        Long id3 = recordService.addRecord(Record.createRecord(workout, 50, 15, LocalDateTime.now()));
+        Long id = recordService.addRecord(Record.createRecord(exercise, 50, 15, LocalDateTime.now()));
+        Long id2 = recordService.addRecord(Record.createRecord(exercise, 50, 15, LocalDateTime.now()));
+        Long id3 = recordService.addRecord(Record.createRecord(exercise, 50, 15, LocalDateTime.now()));
 
         // Then
-        assertEquals(id3, workoutService.getLastRecord(workout.getId()).getId());
+        assertEquals(id3, exerciseService.getLastRecord(exercise.getId()).getId());
     }
 
     @Test
     public void removeRecord() throws Exception {
         // Given
-        Workout workout = addWorkout();
+        Exercise exercise = addWorkout();
 
-        Long id = recordService.addRecord(Record.createRecord(workout, 50, 15, LocalDateTime.now()));
-        Long id2 = recordService.addRecord(Record.createRecord(workout, 50, 15, LocalDateTime.now()));
-        Long id3 = recordService.addRecord(Record.createRecord(workout, 50, 15, LocalDateTime.now()));
+        Long id = recordService.addRecord(Record.createRecord(exercise, 50, 15, LocalDateTime.now()));
+        Long id2 = recordService.addRecord(Record.createRecord(exercise, 50, 15, LocalDateTime.now()));
+        Long id3 = recordService.addRecord(Record.createRecord(exercise, 50, 15, LocalDateTime.now()));
 
         // When
         recordService.removeOne(id3);
 
         // Then
         assertEquals(2, recordRepository.findAll().size());
-        assertEquals(id2, workoutService.getLastRecord(workout.getId()).getId());
+        assertEquals(id2, exerciseService.getLastRecord(exercise.getId()).getId());
     }
     
     @Test
     public void findSameDateRecord() throws Exception {
         // Given
-        Workout workout = addWorkout();
+        Exercise exercise = addWorkout();
 
         // When
-        Long id = recordService.addRecord(Record.createRecord(workout, 50, 15, LocalDateTime.now()));
+        Long id = recordService.addRecord(Record.createRecord(exercise, 50, 15, LocalDateTime.now()));
 
         // Then
         assert(!recordRepository.findByDate(LocalDateTime.now()).isEmpty());

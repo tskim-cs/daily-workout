@@ -1,7 +1,6 @@
 package workout.dailyworkout.domain;
 
 import lombok.Getter;
-import org.apache.tomcat.jni.Local;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -18,15 +17,15 @@ public class Record {
     private LocalDateTime recordDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "workout_id")
-    private Workout workout;
+    @JoinColumn(name = "exercise_id")
+    private Exercise exercise;
 
     private int weight;
     private int reps;
 
-    public static Record createRecord(Workout workout, int weight, int reps, LocalDateTime date) {
+    public static Record createRecord(Exercise exercise, int weight, int reps, LocalDateTime date) {
         Record record = new Record();
-        record.workout = workout;
+        record.exercise = exercise;
         record.recordDate = date;
         record.weight = weight;
         record.reps = reps;
@@ -34,7 +33,7 @@ public class Record {
         return record;
     }
 
-    public static Record createRecordNow(Workout workout, int weight, int reps) {
-        return createRecord(workout, weight, reps, LocalDateTime.now());
+    public static Record createRecordNow(Exercise exercise, int weight, int reps) {
+        return createRecord(exercise, weight, reps, LocalDateTime.now());
     }
 }

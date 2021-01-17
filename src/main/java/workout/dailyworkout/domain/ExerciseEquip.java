@@ -1,5 +1,5 @@
 package workout.dailyworkout.domain;
 
-public enum WorkoutEquip {
+public enum ExerciseEquip {
     BARBELL, DUMBELL, MACHINE, NONE
 }

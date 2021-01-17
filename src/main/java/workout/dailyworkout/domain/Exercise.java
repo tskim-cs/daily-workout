@@ -3,17 +3,16 @@ package workout.dailyworkout.domain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.jdbc.Work;
 
 import javax.persistence.*;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Workout {
+public class Exercise {
 
     @Id @GeneratedValue
-    @Column(name = "workout_id")
+    @Column(name = "exercise_id")
     private Long id;
 
     @Column(nullable = false)
@@ -21,22 +20,22 @@ public class Workout {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private WorkoutPart part;
+    private ExerciseType type;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private WorkoutEquip equip;
+    private ExerciseEquip equip;
 
-    public static Workout createWorkout(String name, WorkoutPart part, WorkoutEquip equip) {
-        Workout workout = new Workout();
-        workout.name = name;
-        workout.part = part;
-        workout.equip = equip;
+    public static Exercise createExercise(String name, ExerciseType type, ExerciseEquip equip) {
+        Exercise exercise = new Exercise();
+        exercise.name = name;
+        exercise.type = type;
+        exercise.equip = equip;
 
-        return workout;
+        return exercise;
     }
 
-    public void updateWorkoutName(String name) {
+    public void updateExerciseName(String name) {
         this.name = name;
     }
 }

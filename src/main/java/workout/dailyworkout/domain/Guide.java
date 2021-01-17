@@ -18,16 +18,16 @@ public class Guide {
     private String trainer;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "workout_id")
-    private Workout workout;
+    @JoinColumn(name = "exercise_id")
+    private Exercise exercise;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    public static Guide createGuide(String trainer, Workout workout, String content) {
+    public static Guide createGuide(String trainer, Exercise exercise, String content) {
         Guide guide = new Guide();
         guide.trainer = trainer;
-        guide.workout = workout;
+        guide.exercise = exercise;
         guide.content = content;
 
         return guide;

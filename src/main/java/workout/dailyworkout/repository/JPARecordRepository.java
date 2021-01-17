@@ -1,13 +1,11 @@
 package workout.dailyworkout.repository;
 
 import lombok.RequiredArgsConstructor;
-import org.hibernate.jdbc.Work;
 import org.springframework.stereotype.Repository;
 import workout.dailyworkout.domain.Record;
-import workout.dailyworkout.domain.Workout;
+import workout.dailyworkout.domain.Exercise;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TemporalType;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,9 +26,9 @@ public class JPARecordRepository implements RecordRepository{
     }
 
     @Override
-    public List<Record> findByWorkout(Workout workout) {
-        return em.createQuery("select r from Record r where r.workout = :workout", Record.class)
-                .setParameter("workout", workout)
+    public List<Record> findByExercise(Exercise exercise) {
+        return em.createQuery("select r from Record r where r.exercise = :exercise", Record.class)
+                .setParameter("exercise", exercise)
                 .getResultList();
     }
 
