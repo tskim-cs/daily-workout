@@ -3,11 +3,13 @@ package workout.dailyworkout.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import workout.dailyworkout.domain.Record;
+import workout.dailyworkout.domain.workout.WorkoutSession;
 import workout.dailyworkout.domain.Exercise;
-import workout.dailyworkout.repository.RecordRepository;
+import workout.dailyworkout.domain.workout.WorkoutSet;
+import workout.dailyworkout.repository.WorkoutRepository;
 import workout.dailyworkout.repository.ExerciseRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -16,7 +18,7 @@ import java.util.List;
 public class ExerciseService {
 
     private final ExerciseRepository exerciseRepository;
-    private final RecordRepository recordRepository;
+    private final WorkoutRepository workoutRepository;
 
     @Transactional
     public Long addExercise(Exercise exercise) {
@@ -38,7 +40,7 @@ public class ExerciseService {
     public List<Exercise> findByName(String name) { return exerciseRepository.findByName(name); }
 
     // TODO
-    // public List<Workout> findWorkouts(WorkoutSearch workoutSearch) {}
+    // public List<Exercise> findExercises(ExerciseSearch exerciseSearch) {}
 
     public List<Exercise> findAllExercises() {
         return exerciseRepository.findAll();
@@ -50,10 +52,26 @@ public class ExerciseService {
         exercise.updateExerciseName(name);
     }
 
-    public Record getLastRecord(Long id) {
-        Exercise exercise = exerciseRepository.findById(id);
-        List<Record> records = recordRepository.findByExercise(exercise);
-        return records.size() > 0 ? records.get(records.size() - 1) : null;
+    public List<WorkoutSet> findLastWorkoutSets(Long exerciseId) {
+        Exercise exercise = exerciseRepository.findById(exerciseId);
+        List<WorkoutSet> sets = workoutRepository.findCommonExerciseSets(exercise);
+
+        if (sets.isEmpty()) {
+            return null;
+        }
+
+        WorkoutSession session = sets.get(sets.size() - 1).getSession();
+        return findCommonExerciseSetsInSession(session, exercise);
+    }
+
+    private List<WorkoutSet> findCommonExerciseSetsInSession(WorkoutSession session, Exercise exercise) {
+        List<WorkoutSet> result = new ArrayList<>();
+        for (WorkoutSet s : session.getSets()) {
+            if (s.getExercise() == exercise) {
+                result.add(s);
+            }
+        }
+        return result;
     }
 
     // TODO

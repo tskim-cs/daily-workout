@@ -37,14 +37,59 @@ public class ExerciseServiceTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void rejectDuplicatedWorkout() throws Exception {
+    public void rejectDuplicatedExercise() throws Exception {
         // Given
-        Exercise exercise1 = Exercise.createExercise("squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
+        Exercise exercise1 = Exercise.createExercise("Barbell Squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
         Long id = exerciseService.addExercise(exercise1);
 
         // When
-        Exercise exercise2 = Exercise.createExercise("squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
-        
+        Exercise exercise2 = Exercise.createExercise("barbell squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
+
+        // Then
+        Long id2 = exerciseService.addExercise(exercise2);
+
+        fail();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void rejectDuplicatedExercise2() throws Exception {
+        // Given
+        Exercise exercise1 = Exercise.createExercise("Barbell Squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
+        Long id = exerciseService.addExercise(exercise1);
+
+        // When
+        Exercise exercise2 = Exercise.createExercise("barbell squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
+
+        // Then
+        Long id2 = exerciseService.addExercise(exercise2);
+
+        fail();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void rejectDuplicatedExercise3() throws Exception {
+        // Given
+        Exercise exercise1 = Exercise.createExercise("Barbell Squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
+        Long id = exerciseService.addExercise(exercise1);
+
+        // When
+        Exercise exercise2 = Exercise.createExercise("BArbell squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
+
+        // Then
+        Long id2 = exerciseService.addExercise(exercise2);
+
+        fail();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void rejectDuplicatedExercise4() throws Exception {
+        // Given
+        Exercise exercise1 = Exercise.createExercise("Barbell Squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
+        Long id = exerciseService.addExercise(exercise1);
+
+        // When
+        Exercise exercise2 = Exercise.createExercise("barbell-squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
+
         // Then
         Long id2 = exerciseService.addExercise(exercise2);
 

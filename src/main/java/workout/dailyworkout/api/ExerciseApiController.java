@@ -7,13 +7,10 @@ import org.springframework.web.bind.annotation.*;
 import workout.dailyworkout.domain.Exercise;
 import workout.dailyworkout.domain.ExerciseEquip;
 import workout.dailyworkout.domain.ExerciseType;
-import workout.dailyworkout.domain.Record;
+import workout.dailyworkout.domain.workout.WorkoutSession;
+import workout.dailyworkout.domain.workout.WorkoutSet;
 import workout.dailyworkout.service.ExerciseService;
 
-import javax.persistence.Column;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
@@ -61,7 +58,7 @@ public class ExerciseApiController {
     /**
      * Find exercise by name
      * @param request name
-     * @return exercise info and last record info
+     * @return exercise info and last relevant workout info
      */
     @PostMapping("/api/v1/exercises/find")
     public GetExerciseInfoResponse getExerciseInfo(@RequestBody @Valid GetExerciseInfoRequest request) {
@@ -70,16 +67,15 @@ public class ExerciseApiController {
             throw new IllegalArgumentException("No such exercise.");
         }
         Exercise exercise = exercises.get(0);
-        Record lastRecord = exerciseService.getLastRecord(exercise.getId());
+        List<WorkoutSet> lastWorkoutSets = exerciseService.findLastWorkoutSets(exercise.getId());
 
-        if (lastRecord == null) {
-            return new GetExerciseInfoResponse(exercise.getId(), exercise.getName(), exercise.getType(), exercise.getEquip(),
-                    null, null, null);
+        GetExerciseInfoResponse result = new GetExerciseInfoResponse(exercise.getId(), exercise.getName(), exercise.getType(), exercise.getEquip());
+        for (WorkoutSet s : lastWorkoutSets) {
+            WorkoutSetResponse setResponse = new WorkoutSetResponse(s.getCreatedDate(), s.getWeight(), s.getReps());
+            result.getWorkoutSetResponses().add(setResponse);
         }
-        else {
-            return new GetExerciseInfoResponse(exercise.getId(), exercise.getName(), exercise.getType(), exercise.getEquip(),
-                    lastRecord.getRecordDate(), lastRecord.getWeight(), lastRecord.getWeight());
-        }
+
+        return result;
     }
 
     /**
@@ -133,7 +129,6 @@ public class ExerciseApiController {
     @AllArgsConstructor
     private static class DefaultExerciseResponse {
         private Long id;
-
         private String name;
     }
 
@@ -153,17 +148,17 @@ public class ExerciseApiController {
     @RequiredArgsConstructor
     private static class GetExerciseInfoResponse {
         private final Long id;
-
         private final String name;
-
         private final ExerciseType type;
-
         private final ExerciseEquip equip;
+        private final List<WorkoutSetResponse> workoutSetResponses = new ArrayList<WorkoutSetResponse>();
+    }
 
+    @Data
+    @RequiredArgsConstructor
+    private static class WorkoutSetResponse {
         private final LocalDateTime lastRecordDate;
-
         private final Integer lastWeight;
-
         private final Integer lastReps;
     }
 }

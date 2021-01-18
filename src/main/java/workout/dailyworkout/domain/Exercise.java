@@ -29,7 +29,7 @@ public class Exercise {
     // Save name to title case
     public static Exercise createExercise(String name, ExerciseType type, ExerciseEquip equip) {
         Exercise exercise = new Exercise();
-        exercise.name = toTitleCase(name);
+        exercise.name = applyNamingRules(name);
         exercise.type = type;
         exercise.equip = equip;
 
@@ -40,13 +40,22 @@ public class Exercise {
         this.name = name;
     }
 
-    private static String toTitleCase(String name) {
+    /**
+     * Apply naming rules
+     *
+     * 1) Save as title case
+     * 2) Any non-alphabetic character will be replaced to space
+     * @param name Non-refined string
+     * @return Refined string
+     */
+    private static String applyNamingRules(String name) {
         StringBuilder titleCase = new StringBuilder(name.length());
         boolean nextTitleCase = true;
 
         for (char c : name.toCharArray()) {
             if (!Character.isAlphabetic(c)) {
                 nextTitleCase = true;
+                c = ' ';
             } else if (nextTitleCase) {
                 c = Character.toTitleCase(c);
                 nextTitleCase = false;
