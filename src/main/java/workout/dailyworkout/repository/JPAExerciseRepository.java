@@ -25,9 +25,10 @@ public class JPAExerciseRepository implements ExerciseRepository {
         return em.find(Exercise.class, id);
     }
 
+    // Find name ignoring case
     @Override
     public List<Exercise> findByName(String name) {
-        return em.createQuery("select e from Exercise e where e.name = :name", Exercise.class)
+        return em.createQuery("select e from Exercise e where lower(e.name) like lower(concat('%', :name, '%'))",Exercise.class)
                 .setParameter("name", name)
                 .getResultList();
     }

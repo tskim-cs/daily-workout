@@ -26,9 +26,10 @@ public class Exercise {
     @Enumerated(EnumType.STRING)
     private ExerciseEquip equip;
 
+    // Save name to title case
     public static Exercise createExercise(String name, ExerciseType type, ExerciseEquip equip) {
         Exercise exercise = new Exercise();
-        exercise.name = name;
+        exercise.name = toTitleCase(name);
         exercise.type = type;
         exercise.equip = equip;
 
@@ -37,5 +38,22 @@ public class Exercise {
 
     public void updateExerciseName(String name) {
         this.name = name;
+    }
+
+    private static String toTitleCase(String name) {
+        StringBuilder titleCase = new StringBuilder(name.length());
+        boolean nextTitleCase = true;
+
+        for (char c : name.toCharArray()) {
+            if (!Character.isAlphabetic(c)) {
+                nextTitleCase = true;
+            } else if (nextTitleCase) {
+                c = Character.toTitleCase(c);
+                nextTitleCase = false;
+            }
+            titleCase.append(c);
+        }
+
+        return titleCase.toString();
     }
 }

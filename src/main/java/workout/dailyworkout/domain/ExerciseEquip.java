@@ -13,8 +13,8 @@ public enum ExerciseEquip {
 
     public static List<String> names() {
         List<String> names = new ArrayList<>();
-        for (ExerciseType t : ExerciseType.values()) {
-            names.add(t.toString());
+        for (ExerciseEquip e : ExerciseEquip.values()) {
+            names.add(e.toString());
         }
         return names;
     }

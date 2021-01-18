@@ -35,10 +35,12 @@ public class ExerciseService {
         return exerciseRepository.findById(workoutId);
     }
 
+    public List<Exercise> findByName(String name) { return exerciseRepository.findByName(name); }
+
     // TODO
     // public List<Workout> findWorkouts(WorkoutSearch workoutSearch) {}
 
-    public List<Exercise> findAllWorkouts() {
+    public List<Exercise> findAllExercises() {
         return exerciseRepository.findAll();
     }
 
