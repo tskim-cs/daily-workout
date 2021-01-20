@@ -41,8 +41,8 @@ public class JPAWorkoutRepository implements WorkoutRepository {
 
     @Override
     public List<WorkoutSession> findByDate(LocalDateTime date) {
-        return em.createQuery("select w from WorkoutSession w where w.workoutDate = :workoutDate", WorkoutSession.class)
-                .setParameter("workoutDate", date)
+        return em.createQuery("select w from WorkoutSession w where w.startDate = :startDate", WorkoutSession.class)
+                .setParameter("startDate", date)
                 .getResultList();
     }
 
@@ -53,18 +53,31 @@ public class JPAWorkoutRepository implements WorkoutRepository {
     }
 
     @Override
+    public List<WorkoutSet> findAllSets() {
+        return em.createQuery("select s from WorkoutSet s", WorkoutSet.class)
+                .getResultList();
+    }
+
+    @Override
     public WorkoutSession findLastSession() {
         return em.createQuery("select w from WorkoutSession w order by w.id desc", WorkoutSession.class)
                 .getSingleResult();
     }
 
     @Override
-    public void removeSession(Long sessionId) {
-        em.remove(findSessionById(sessionId));
+    public void removeSession(WorkoutSession session) {
+        em.remove(session);
     }
 
     @Override
-    public void removeSet(Long setId) {
-        em.remove(findSetById(setId));
+    public void removeSet(WorkoutSet set) {
+        em.remove(set);
+    }
+
+    @Override
+    public List<WorkoutSet> findSetsInSession(WorkoutSession session) {
+        return em.createQuery("select s from WorkoutSet s where s.session = :session", WorkoutSet.class)
+                .setParameter("session", session)
+                .getResultList();
     }
 }

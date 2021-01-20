@@ -26,15 +26,15 @@ public class WorkoutService {
         return session.getId();
     }
 
-    @Transactional
-    public Long createPastSession(LocalDateTime date) {
-        if (date.isAfter(LocalDateTime.now())) {
-            throw new IllegalArgumentException("The time should be past.");
-        }
-        WorkoutSession session = WorkoutSession.createWorkoutSession(date);
-        workoutRepository.save(session);
-        return session.getId();
-    }
+//    @Transactional
+//    public Long createPastSession(LocalDateTime date) {
+//        if (date.isAfter(LocalDateTime.now())) {
+//            throw new IllegalArgumentException("The time should be past.");
+//        }
+//        WorkoutSession session = WorkoutSession.createWorkoutSession(date);
+//        workoutRepository.save(session);
+//        return session.getId();
+//    }
 
     @Transactional
     public Long endSession(Long sessionId) {
@@ -42,6 +42,8 @@ public class WorkoutService {
 
         // TODO
         // Make immutable WorkoutSet list
+        // TODO
+        // How to recognize non-ended session and force user to end it?
 
         workoutRepository.save(session);
         return session.getId();
@@ -52,17 +54,22 @@ public class WorkoutService {
         Exercise exercise = exerciseRepository.findById(exerciseId);
         WorkoutSession session = workoutRepository.findSessionById(sessionId);
         WorkoutSet set = WorkoutSet.addWorkoutSetNow(session, exercise, weight, reps);
+        workoutRepository.save(session);
         return set.getId();
     }
 
     @Transactional
     public void removeSet(Long setId) {
-        workoutRepository.removeSet(setId);
+        WorkoutSet set = workoutRepository.findSetById(setId);
+        WorkoutSession session = set.getSession();
+        set.removeWorkoutSet();
+        workoutRepository.save(session);
+        workoutRepository.removeSet(set);
     }
 
     @Transactional
     public void removeSession(Long sessionId) {
-        workoutRepository.removeSession(sessionId);
+        workoutRepository.removeSession(workoutRepository.findSessionById(sessionId));
     }
 
     public WorkoutSession findSession(Long sessionId) {

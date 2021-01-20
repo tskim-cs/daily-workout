@@ -1,5 +1,6 @@
 package workout.dailyworkout.repository;
 
+import org.hibernate.jdbc.Work;
 import workout.dailyworkout.domain.Exercise;
 import workout.dailyworkout.domain.workout.WorkoutSession;
 import workout.dailyworkout.domain.workout.WorkoutSet;
@@ -17,8 +18,11 @@ public interface WorkoutRepository {
     List<WorkoutSet> findCommonExerciseSets(Exercise exercise);
     List<WorkoutSession> findByDate(LocalDateTime date);
     List<WorkoutSession> findAllSessions();
+    List<WorkoutSet> findAllSets();
     WorkoutSession findLastSession();
 
-    void removeSession(Long sessionId);
-    void removeSet(Long setId);
+    void removeSession(WorkoutSession session);
+    void removeSet(WorkoutSet set);
+
+    List<WorkoutSet> findSetsInSession(WorkoutSession session);
 }

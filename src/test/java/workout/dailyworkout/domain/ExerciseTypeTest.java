@@ -43,13 +43,4 @@ public class ExerciseTypeTest {
         assertEquals(ExerciseType.BACK, ExerciseType.valueOf(str2.toUpperCase()));
         assertEquals(ExerciseType.BACK, ExerciseType.valueOf(str3.toUpperCase()));
     }
-
-    @Test
-    public void enumToStringList() throws Exception {
-        // Given
-        List<String> names = ExerciseType.names();
-
-        System.out.println("names = " + names);
-    }
-    
 }

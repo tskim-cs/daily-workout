@@ -41,11 +41,25 @@ public class WorkoutSet {
 
         // Add this set to WorkoutSession.sets
         session.getSets().add(workoutSet);
+        // Increase duration time from start to last(this) set
+        session.recordDuration();
 
         return workoutSet;
     }
 
     public static WorkoutSet addWorkoutSetNow(WorkoutSession session, Exercise exercise, int weight, int reps) {
         return addWorkoutSet(session, exercise, weight, reps, LocalDateTime.now());
+    }
+
+    public void removeWorkoutSet() {
+        WorkoutSession session = this.getSession();
+        session.getSets().remove(this);
+
+        // Re-record duration because it can remove last set
+        session.recordDuration();
+
+        // As removing pointer to this WorkoutSet, they will be removed.
+        this.session = null;
+        this.exercise = null;
     }
 }

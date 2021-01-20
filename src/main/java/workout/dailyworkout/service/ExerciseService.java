@@ -10,6 +10,7 @@ import workout.dailyworkout.repository.WorkoutRepository;
 import workout.dailyworkout.repository.ExerciseRepository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -57,7 +58,7 @@ public class ExerciseService {
         List<WorkoutSet> sets = workoutRepository.findCommonExerciseSets(exercise);
 
         if (sets.isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
 
         WorkoutSession session = sets.get(sets.size() - 1).getSession();
