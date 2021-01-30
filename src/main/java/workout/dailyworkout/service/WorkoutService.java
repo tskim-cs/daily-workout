@@ -9,8 +9,6 @@ import workout.dailyworkout.domain.workout.WorkoutSet;
 import workout.dailyworkout.repository.ExerciseRepository;
 import workout.dailyworkout.repository.WorkoutRepository;
 
-import java.time.LocalDateTime;
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -53,7 +51,8 @@ public class WorkoutService {
     public Long addSet(Long sessionId, Long exerciseId, int weight, int reps) {
         Exercise exercise = exerciseRepository.findById(exerciseId);
         WorkoutSession session = workoutRepository.findSessionById(sessionId);
-        WorkoutSet set = WorkoutSet.addWorkoutSetNow(session, exercise, weight, reps);
+        WorkoutSet set = WorkoutSet.createWorkoutSetNow(exercise, weight, reps);
+        session.addWorkoutSet(set);
         workoutRepository.save(session);
         return set.getId();
     }
@@ -62,8 +61,8 @@ public class WorkoutService {
     public void removeSet(Long setId) {
         WorkoutSet set = workoutRepository.findSetById(setId);
         WorkoutSession session = set.getSession();
-        set.removeWorkoutSet();
-        workoutRepository.save(session);
+        session.removeWorkoutSet(set);
+//        workoutRepository.save(session);
         workoutRepository.removeSet(set);
     }
 

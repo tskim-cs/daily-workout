@@ -31,34 +31,29 @@ public class WorkoutSet {
     private int weight;
     private int reps;
 
-    public static WorkoutSet addWorkoutSet(WorkoutSession session, Exercise exercise, int weight, int reps, LocalDateTime date) {
+    public static WorkoutSet createWorkoutSet(Exercise exercise, int weight, int reps, LocalDateTime date) {
         WorkoutSet workoutSet = new WorkoutSet();
         workoutSet.createdDate = date;
-        workoutSet.session = session;
         workoutSet.exercise = exercise;
         workoutSet.weight = weight;
         workoutSet.reps = reps;
 
-        // Add this set to WorkoutSession.sets
-        session.getSets().add(workoutSet);
-        // Increase duration time from start to last(this) set
-        session.recordDuration();
-
         return workoutSet;
     }
 
-    public static WorkoutSet addWorkoutSetNow(WorkoutSession session, Exercise exercise, int weight, int reps) {
-        return addWorkoutSet(session, exercise, weight, reps, LocalDateTime.now());
+    public static WorkoutSet createWorkoutSetNow(Exercise exercise, int weight, int reps) {
+        return createWorkoutSet(exercise, weight, reps, LocalDateTime.now());
     }
 
-    public void removeWorkoutSet() {
-        WorkoutSession session = this.getSession();
-        session.getSets().remove(this);
+    public void connectSession(WorkoutSession session) {
+        // Disallow changing existing session
+        if (this.session != null)
+            throw new IllegalStateException();
+        else
+            this.session = session;
+    }
 
-        // Re-record duration because it can remove last set
-        session.recordDuration();
-
-        // As removing pointer to this WorkoutSet, they will be removed.
+    public void removeRelation() {
         this.session = null;
         this.exercise = null;
     }

@@ -39,7 +39,15 @@ public class WorkoutSession {
         return createWorkoutSession(LocalDateTime.now());
     }
 
-    public void recordDuration() {
+    public void addWorkoutSet(WorkoutSet set) {
+        this.sets.add(set);
+        set.connectSession(this);
+
+        // Increase duration time from start to last(this) set
+        this.recordDuration();
+    }
+
+    private void recordDuration() {
         // TODO
         // Only single set exists, how can record duration?
 
@@ -47,5 +55,13 @@ public class WorkoutSession {
             return;
 
         duration = Duration.between(startDate, sets.get(sets.size() - 1).getCreatedDate());
+    }
+
+    public void removeWorkoutSet(WorkoutSet set) {
+        this.sets.remove(set);
+        set.removeRelation();
+
+        // Re-record duration because it can remove last set
+        this.recordDuration();
     }
 }
