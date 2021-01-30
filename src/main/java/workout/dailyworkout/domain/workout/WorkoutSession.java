@@ -40,6 +40,12 @@ public class WorkoutSession {
     }
 
     public void recordDuration() {
+        // TODO
+        // Only single set exists, how can record duration?
+
+        if (sets.isEmpty())
+            return;
+
         duration = Duration.between(startDate, sets.get(sets.size() - 1).getCreatedDate());
     }
 }
