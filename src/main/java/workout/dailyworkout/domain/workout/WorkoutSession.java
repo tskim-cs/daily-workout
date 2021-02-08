@@ -57,6 +57,14 @@ public class WorkoutSession {
         duration = Duration.between(startDate, sets.get(sets.size() - 1).getCreatedDate());
     }
 
+    public WorkoutSet findWorkoutSet(Long setId) {
+        for (WorkoutSet set : this.sets) {
+            if (set.getId() == setId)
+                return set;
+        }
+        return null;
+    }
+
     public void removeWorkoutSet(WorkoutSet set) {
         this.sets.remove(set);
         set.removeRelation();

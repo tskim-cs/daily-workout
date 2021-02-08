@@ -5,7 +5,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 import workout.dailyworkout.domain.Exercise;
 import workout.dailyworkout.domain.ExerciseEquip;
 import workout.dailyworkout.domain.ExerciseType;
@@ -17,12 +16,12 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Transactional
-public class WorkoutSessionServiceTest {
+public class WorkoutServiceTest {
 
     @Autowired
     WorkoutService workoutService;
@@ -57,27 +56,25 @@ public class WorkoutSessionServiceTest {
         Long sessionId = workoutService.startSession();
 
         // When
-        int len = 3;
-        List<Long> setIds = new ArrayList<>();
-        for (int i = 0; i < len; i++) {
-            setIds.add(workoutService.addSet(sessionId, exerciseId, 50, 15));
+        for (int i = 0; i < 3; i++) {
+            workoutService.addSetAndReturn(sessionId, exerciseId, 50, 15);
         }
 
         // Then
+        WorkoutSession session = workoutService.findSession(sessionId);
+
         // Check session identical
         assertEquals(1, workoutRepository.findAllSessions().size());
         assertEquals(sessionId, workoutRepository.findAllSessions().get(0).getId());
         assertEquals(workoutRepository.findSessionById(sessionId), workoutRepository.findAllSessions().get(0));
 
-        // Check session contains all sets
-        for (Long id : setIds) {
-            assert(workoutService.findSession(sessionId).getSets().contains(workoutService.findSet(id)));
-            assertEquals(workoutService.findSession(sessionId), workoutService.findSet(id).getSession());
-        }
+        for (WorkoutSet set : session.getSets()) {
+            // Check session contains set
+            assert(workoutService.findSession(sessionId).getSets().contains(set));
+            assertEquals(workoutService.findSession(sessionId), set.getSession());
 
-        // Check saved on exercise side
-        for (Long id : setIds) {
-            assert(exerciseService.findLastWorkoutSets(exerciseId).contains(workoutService.findSet(id)));
+            // Check saved on exercise side
+            assert(exerciseService.findLastWorkoutSets(exerciseId).contains(set));
         }
     }
 
@@ -87,30 +84,28 @@ public class WorkoutSessionServiceTest {
         Long exerciseId = addExercise("squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
         Long sessionId = workoutService.startSession();
 
-        int len = 3;
-        List<Long> setIds = new ArrayList<>();
-        for (int i = 0; i < len; i++) {
-            setIds.add(workoutService.addSet(sessionId, exerciseId, 50, 15));
+        for (int i = 0; i < 3; i++) {
+            workoutService.addSetAndReturn(sessionId, exerciseId, 50, 15);
         }
 
         // When
         workoutService.endSession(sessionId);
 
         // Then
+        WorkoutSession session = workoutService.findSession(sessionId);
+
         // Check session identical
         assertEquals(1, workoutRepository.findAllSessions().size());
         assertEquals(sessionId, workoutRepository.findAllSessions().get(0).getId());
         assertEquals(workoutRepository.findSessionById(sessionId), workoutRepository.findAllSessions().get(0));
 
-        // Check session contains all sets
-        for (Long id : setIds) {
-            assert(workoutService.findSession(sessionId).getSets().contains(workoutService.findSet(id)));
-            assertEquals(workoutService.findSession(sessionId), workoutService.findSet(id).getSession());
-        }
+        for (WorkoutSet set : session.getSets()) {
+            // Check session contains set
+            assert(workoutService.findSession(sessionId).getSets().contains(set));
+            assertEquals(workoutService.findSession(sessionId), set.getSession());
 
-        // Check saved on exercise side
-        for (Long id : setIds) {
-            assert(exerciseService.findLastWorkoutSets(exerciseId).contains(workoutService.findSet(id)));
+            // Check saved on exercise side
+            assert(exerciseService.findLastWorkoutSets(exerciseId).contains(set));
         }
     }
 
@@ -134,7 +129,7 @@ public class WorkoutSessionServiceTest {
         Long sessionId = workoutService.startSession();
 
         for (int i = 0; i < 3; i++) {
-            workoutService.addSet(sessionId, exerciseId, 50, 15);
+            workoutService.addSetAndReturn(sessionId, exerciseId, 50, 15);
         }
 
         // Then
@@ -150,7 +145,7 @@ public class WorkoutSessionServiceTest {
         Long sessionId = workoutService.startSession();
 
         for (int i = 0; i < 3; i++) {
-            workoutService.addSet(sessionId, exerciseId, 50, 15);
+            workoutService.addSetAndReturn(sessionId, exerciseId, 50, 15);
         }
 
         // When
@@ -158,7 +153,7 @@ public class WorkoutSessionServiceTest {
 
         // Then
         WorkoutSession session = workoutService.findSession(sessionId);
-        List<WorkoutSet> sets = session.getSets();
+        List<WorkoutSet> sets = workoutService.findSetsInSession(sessionId);
         assertEquals(Duration.between(session.getStartDate(), sets.get(sets.size() - 1).getCreatedDate()), session.getDuration());
     }
 
@@ -169,20 +164,19 @@ public class WorkoutSessionServiceTest {
         Long sessionId = workoutService.startSession();
 
         for (int i = 0; i < 3; i++) {
-            workoutService.addSet(sessionId, exerciseId, 50, 15);
+            workoutService.addSetAndReturn(sessionId, exerciseId, 50, 15);
         }
-        Long lastSetId = workoutService.addSet(sessionId, exerciseId, 50, 15);
+        WorkoutSet lastSet = workoutService.addSetAndReturn(sessionId, exerciseId, 50, 15);
         workoutService.endSession(sessionId);
 
         // When
-        workoutService.removeSet(lastSetId);
+        workoutService.removeSet(sessionId, lastSet.getId());
 
         // Then
         WorkoutSession session = workoutService.findSession(sessionId);
-        List<WorkoutSet> sets = session.getSets();
+        List<WorkoutSet> sets = workoutService.findSetsInSession(sessionId);
         assertEquals(Duration.between(session.getStartDate(), sets.get(sets.size() - 1).getCreatedDate()), session.getDuration());
     }
-
 
     @Test
     public void removeSession() throws Exception {
@@ -191,9 +185,9 @@ public class WorkoutSessionServiceTest {
         Long sessionId = workoutService.startSession();
 
         int len = 3;
-        List<Long> setIds = new ArrayList<>();
+        List<Integer> setIds = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            setIds.add(workoutService.addSet(sessionId, exerciseId, 50, 15));
+            workoutService.addSetAndReturn(sessionId, exerciseId, 50, 15);
         }
         workoutService.endSession(sessionId);
 
@@ -203,11 +197,6 @@ public class WorkoutSessionServiceTest {
         // Then
         // Check session empty
         assertEquals(0, workoutRepository.findAllSessions().size());
-
-        // Check whether sets in session are cleared
-        for (Long id : setIds) {
-            assert(workoutRepository.findAllSets().isEmpty());
-        }
 
         // Check saved on exercise side
         assert(exerciseService.findLastWorkoutSets(exerciseId).isEmpty());
@@ -222,34 +211,31 @@ public class WorkoutSessionServiceTest {
         int len = 3;
         List<Long> setIds = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            setIds.add(workoutService.addSet(sessionId, exerciseId, 50, 15));
+            WorkoutSet set = workoutService.addSetAndReturn(sessionId, exerciseId, 50, 15);
+            setIds.add(set.getId());
         }
         workoutService.endSession(sessionId);
 
         // When
         Long removedSetId = setIds.get(0);
-        workoutService.removeSet(removedSetId);
+        workoutService.removeSet(sessionId, removedSetId);
         setIds.remove(0);
 
         // Then
-        // Check session identical
-        assertEquals(1, workoutRepository.findAllSessions().size());
-        assertEquals(sessionId, workoutRepository.findAllSessions().get(0).getId());
-        assertEquals(workoutRepository.findSessionById(sessionId), workoutRepository.findAllSessions().get(0));
-
-        // Check session contains all sets
-        for (Long id : setIds) {
-            assert(workoutService.findSession(sessionId).getSets().contains(workoutService.findSet(id)));
-            assertEquals(workoutService.findSession(sessionId), workoutService.findSet(id).getSession());
-        }
-        assertEquals(2, workoutService.findSession(sessionId).getSets().size());
-        assertEquals(2, workoutRepository.findSetsInSession(workoutRepository.findSessionById(sessionId)).size());
-
-        // Check saved on exercise side
-        for (Long id : setIds) {
-            assert(exerciseService.findLastWorkoutSets(exerciseId).contains(workoutService.findSet(id)));
-        }
+        assertEquals(2, workoutService.findSetsInSession(sessionId).size());
         assertEquals(2, exerciseService.findLastWorkoutSets(exerciseId).size());
+    }
+    
+    @Test
+    public void getWorkoutSetIdTest() throws Exception {
+        // Given
+        Long exerciseId = addExercise("squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
+        Long sessionId = workoutService.startSession();
+        
+        // When
+        WorkoutSet set = workoutService.addSetAndReturn(sessionId, exerciseId, 50, 15);
 
+        // Then
+        assertNotNull(set.getId());
     }
 }

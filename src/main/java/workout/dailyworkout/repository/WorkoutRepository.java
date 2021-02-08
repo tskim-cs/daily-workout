@@ -12,17 +12,12 @@ public interface WorkoutRepository {
 
     void save(WorkoutSession session);
 
-    WorkoutSet findSetById(Long setId);
     WorkoutSession findSessionById(Long sessionId);
 
     List<WorkoutSet> findCommonExerciseSets(Exercise exercise);
     List<WorkoutSession> findByDate(LocalDateTime date);
     List<WorkoutSession> findAllSessions();
-    List<WorkoutSet> findAllSets();
     WorkoutSession findLastSession();
 
     void removeSession(WorkoutSession session);
-    void removeSet(WorkoutSet set);
-
-    List<WorkoutSet> findSetsInSession(WorkoutSession session);
 }

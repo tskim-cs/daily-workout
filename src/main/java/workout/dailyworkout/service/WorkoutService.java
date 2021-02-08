@@ -1,6 +1,7 @@
 package workout.dailyworkout.service;
 
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import workout.dailyworkout.domain.Exercise;
@@ -8,6 +9,8 @@ import workout.dailyworkout.domain.workout.WorkoutSession;
 import workout.dailyworkout.domain.workout.WorkoutSet;
 import workout.dailyworkout.repository.ExerciseRepository;
 import workout.dailyworkout.repository.WorkoutRepository;
+
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -38,32 +41,29 @@ public class WorkoutService {
     public Long endSession(Long sessionId) {
         WorkoutSession session = workoutRepository.findSessionById(sessionId);
 
-        // TODO
-        // Make immutable WorkoutSet list
-        // TODO
-        // How to recognize non-ended session and force user to end it?
+        // TODO - Make immutable WorkoutSet list; May request removing
+        // TODO - How to recognize non-ended session and force user to end it?
 
-        workoutRepository.save(session);
         return session.getId();
     }
 
+    /**
+     * @return WorkoutSet added to given session id
+     */
     @Transactional
-    public Long addSet(Long sessionId, Long exerciseId, int weight, int reps) {
+    public WorkoutSet addSetAndReturn(Long sessionId, Long exerciseId, int weight, int reps) {
         Exercise exercise = exerciseRepository.findById(exerciseId);
         WorkoutSession session = workoutRepository.findSessionById(sessionId);
         WorkoutSet set = WorkoutSet.createWorkoutSetNow(exercise, weight, reps);
         session.addWorkoutSet(set);
-        workoutRepository.save(session);
-        return set.getId();
+        return set;
     }
 
     @Transactional
-    public void removeSet(Long setId) {
-        WorkoutSet set = workoutRepository.findSetById(setId);
-        WorkoutSession session = set.getSession();
+    public void removeSet(Long sessionId, Long setId) {
+        WorkoutSession session = workoutRepository.findSessionById(sessionId);
+        WorkoutSet set = session.findWorkoutSet(setId);
         session.removeWorkoutSet(set);
-//        workoutRepository.save(session);
-        workoutRepository.removeSet(set);
     }
 
     @Transactional
@@ -75,8 +75,10 @@ public class WorkoutService {
         return workoutRepository.findSessionById(sessionId);
     }
 
-    public WorkoutSet findSet(Long setId) {
-        return workoutRepository.findSetById(setId);
+    public List<WorkoutSet> findSetsInSession(Long sessionId) {
+        List<WorkoutSet> sets = workoutRepository.findSessionById(sessionId).getSets();
+        Hibernate.initialize(sets);
+        return sets;
     }
 //
 //    // TODO

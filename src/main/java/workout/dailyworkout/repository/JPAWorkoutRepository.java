@@ -23,11 +23,6 @@ public class JPAWorkoutRepository implements WorkoutRepository {
     }
 
     @Override
-    public WorkoutSet findSetById(Long setId) {
-        return em.find(WorkoutSet.class, setId);
-    }
-
-    @Override
     public WorkoutSession findSessionById(Long sessionId) {
         return em.find(WorkoutSession.class, sessionId);
     }
@@ -53,12 +48,6 @@ public class JPAWorkoutRepository implements WorkoutRepository {
     }
 
     @Override
-    public List<WorkoutSet> findAllSets() {
-        return em.createQuery("select s from WorkoutSet s", WorkoutSet.class)
-                .getResultList();
-    }
-
-    @Override
     public WorkoutSession findLastSession() {
         return em.createQuery("select w from WorkoutSession w order by w.id desc", WorkoutSession.class)
                 .getSingleResult();
@@ -69,15 +58,4 @@ public class JPAWorkoutRepository implements WorkoutRepository {
         em.remove(session);
     }
 
-    @Override
-    public void removeSet(WorkoutSet set) {
-        em.remove(set);
-    }
-
-    @Override
-    public List<WorkoutSet> findSetsInSession(WorkoutSession session) {
-        return em.createQuery("select s from WorkoutSet s where s.session = :session", WorkoutSet.class)
-                .setParameter("session", session)
-                .getResultList();
-    }
 }
