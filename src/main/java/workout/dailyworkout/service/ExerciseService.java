@@ -21,12 +21,6 @@ public class ExerciseService {
     private final ExerciseRepository exerciseRepository;
     private final WorkoutRepository workoutRepository;
 
-    @Transactional
-    public Long addExercise(Exercise exercise) {
-        validateDuplicateExercise(exercise);
-        exerciseRepository.save(exercise);
-        return exercise.getId();
-    }
 
     private void validateDuplicateExercise(Exercise exercise) {
         if (!exerciseRepository.findByName(exercise.getName()).isEmpty()) {
@@ -34,17 +28,11 @@ public class ExerciseService {
         }
     }
 
-    public Exercise findOne(Long workoutId) {
-        return exerciseRepository.findById(workoutId);
-    }
-
-    public List<Exercise> findByName(String name) { return exerciseRepository.findByName(name); }
-
-    // TODO
-    // public List<Exercise> findExercises(ExerciseSearch exerciseSearch) {}
-
-    public List<Exercise> findAllExercises() {
-        return exerciseRepository.findAll();
+    @Transactional
+    public Long addExercise(Exercise exercise) {
+        validateDuplicateExercise(exercise);
+        exerciseRepository.save(exercise);
+        return exercise.getId();
     }
 
     @Transactional
@@ -53,16 +41,31 @@ public class ExerciseService {
         exercise.updateExerciseName(name);
     }
 
-    public List<WorkoutSet> findLastWorkoutSets(Long exerciseId) {
-        Exercise exercise = exerciseRepository.findById(exerciseId);
-        List<WorkoutSet> sets = workoutRepository.findCommonExerciseSets(exercise);
+    public Exercise findOne(Long exerciseId) {
+        return exerciseRepository.findById(exerciseId);
+    }
 
-        if (sets.isEmpty()) {
+    public List<Exercise> findByName(String name) { return exerciseRepository.findByName(name); }
+
+
+    public List<Exercise> findAllExercises() {
+        return exerciseRepository.findAll();
+    }
+
+    /**
+     *
+     * @param exerciseId
+     * @return List of WorkoutSet
+     */
+    public List<WorkoutSet> findWorkoutSetsInLastSession(Long exerciseId) {
+        Exercise exercise = exerciseRepository.findById(exerciseId);
+        WorkoutSession lastSession = workoutRepository.findLastSessionWithExercise(exercise);
+
+        if (lastSession == null) {
             return Collections.emptyList();
         }
 
-        WorkoutSession session = sets.get(sets.size() - 1).getSession();
-        return findCommonExerciseSetsInSession(session, exercise);
+        return findCommonExerciseSetsInSession(lastSession, exercise);
     }
 
     private List<WorkoutSet> findCommonExerciseSetsInSession(WorkoutSession session, Exercise exercise) {
@@ -75,6 +78,8 @@ public class ExerciseService {
         return result;
     }
 
+    // TODO
+    // public List<Exercise> findExercises(ExerciseSearch exerciseSearch) {}
     // TODO
     // public Record getRecentDayRecord(Long id) {}
 }

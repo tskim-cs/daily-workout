@@ -74,7 +74,7 @@ public class WorkoutServiceTest {
             assertEquals(workoutService.findSession(sessionId), set.getSession());
 
             // Check saved on exercise side
-            assert(exerciseService.findLastWorkoutSets(exerciseId).contains(set));
+            assert(exerciseService.findWorkoutSetsInLastSession(exerciseId).contains(set));
         }
     }
 
@@ -105,7 +105,7 @@ public class WorkoutServiceTest {
             assertEquals(workoutService.findSession(sessionId), set.getSession());
 
             // Check saved on exercise side
-            assert(exerciseService.findLastWorkoutSets(exerciseId).contains(set));
+            assert(exerciseService.findWorkoutSetsInLastSession(exerciseId).contains(set));
         }
     }
 
@@ -199,7 +199,7 @@ public class WorkoutServiceTest {
         assertEquals(0, workoutRepository.findAllSessions().size());
 
         // Check saved on exercise side
-        assert(exerciseService.findLastWorkoutSets(exerciseId).isEmpty());
+        assert(exerciseService.findWorkoutSetsInLastSession(exerciseId).isEmpty());
     }
     
     @Test
@@ -223,7 +223,7 @@ public class WorkoutServiceTest {
 
         // Then
         assertEquals(2, workoutService.findSetsInSession(sessionId).size());
-        assertEquals(2, exerciseService.findLastWorkoutSets(exerciseId).size());
+        assertEquals(2, exerciseService.findWorkoutSetsInLastSession(exerciseId).size());
     }
     
     @Test

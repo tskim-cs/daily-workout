@@ -3,12 +3,12 @@ package workout.dailyworkout.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import workout.dailyworkout.domain.Exercise;
+import workout.dailyworkout.domain.workout.WorkoutExercise;
 import workout.dailyworkout.domain.workout.WorkoutSession;
 import workout.dailyworkout.domain.workout.WorkoutSet;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -27,11 +27,13 @@ public class JPAWorkoutRepository implements WorkoutRepository {
         return em.find(WorkoutSession.class, sessionId);
     }
 
+    // TODO - More precise query required.
     @Override
-    public List<WorkoutSet> findCommonExerciseSets(Exercise exercise) {
-        return em.createQuery("select s from WorkoutSet s where s.exercise = :exercise", WorkoutSet.class)
+    public WorkoutSession findLastSessionWithExercise(Exercise exercise) {
+        WorkoutExercise workoutExercise = em.createQuery("select e from WorkoutExercise e where e.exercise = :exercise order by e.id desc", WorkoutExercise.class)
                 .setParameter("exercise", exercise)
-                .getResultList();
+                .getSingleResult();
+        return workoutExercise == null ? null : workoutExercise.getSession();
     }
 
     @Override
