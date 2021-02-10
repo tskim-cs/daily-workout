@@ -1,5 +1,6 @@
 package workout.dailyworkout.api;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import workout.dailyworkout.domain.Exercise;
 import workout.dailyworkout.domain.ExerciseEquip;
 import workout.dailyworkout.domain.ExerciseType;
-import workout.dailyworkout.domain.workout.WorkoutSession;
 import workout.dailyworkout.domain.workout.WorkoutSet;
 import workout.dailyworkout.service.ExerciseService;
 
@@ -23,59 +23,46 @@ public class ExerciseApiController {
     private final ExerciseService exerciseService;
 
     /**
-     * Get all exercise types
-     * @return list of exercise types name
-     */
-    @GetMapping("/api/v1/exercises/types")
-    public Result getExerciseTypes() {
-        List<String> types = ExerciseType.names();
-        return new Result(types);
-    }
-
-    /**
-     * Get all exercise equipments
-     * @return list of exercise equipments name
-     */
-    @GetMapping("/api/v1/exercises/equips")
-    public Result getExerciseEquips() {
-        List<String> equips = ExerciseEquip.names();
-        return new Result(equips);
-    }
-
-    /**
      * Get all exercises
+     * @param name name of exercise
      * @return list of exercises name
      */
     @GetMapping("/api/v1/exercises")
-    public Result getExercises() {
-        List<String> exercises = new ArrayList<>();
-        for (Exercise e : exerciseService.findAllExercises()) {
-            exercises.add(e.getName());
-        }
-        return new Result(exercises);
-    }
+    public List<DefaultExerciseResponse> getExercises(@RequestParam(value = "name", required = false) String name) {
+        List<DefaultExerciseResponse> exerciseResponses = new ArrayList<>();
+        List<Exercise> exerciseList = name != null ?
+                exerciseService.findByName(name) :
+                exerciseService.findAllExercises();
 
-    /**
-     * Find exercise by name
-     * @param request name
-     * @return exercise info and last relevant workout info
-     */
-    @PostMapping("/api/v1/exercises/find")
-    public GetExerciseInfoResponse getExerciseInfo(@RequestBody @Valid GetExerciseInfoRequest request) {
-        List<Exercise> exercises = exerciseService.findByName(request.getName());
-        if (exercises.isEmpty()) {
+        // TODO Is it right place to handle error?
+        if (exerciseList.isEmpty()) {
             throw new IllegalArgumentException("No such exercise.");
         }
-        Exercise exercise = exercises.get(0);
-        List<WorkoutSet> lastWorkoutSets = exerciseService.findLastWorkoutSets(exercise.getId());
-
-        GetExerciseInfoResponse result = new GetExerciseInfoResponse(exercise.getId(), exercise.getName(), exercise.getType(), exercise.getEquip());
-        for (WorkoutSet s : lastWorkoutSets) {
-            WorkoutSetResponse setResponse = new WorkoutSetResponse(s.getCreatedDate(), s.getWeight(), s.getReps());
-            result.getWorkoutSetResponses().add(setResponse);
+        else if (exerciseList.size() > 1) {
+            throw new IllegalStateException("Cannot have duplicate exercise.");
         }
 
-        return result;
+        for (Exercise e : exerciseList) {
+            exerciseResponses.add(new DefaultExerciseResponse(e.getId(), e.getName()));
+        }
+
+        return exerciseResponses;
+    }
+
+
+    /**
+     * Get specific exercise info with given ID
+     * @return id and name of exercise
+     */
+    @GetMapping("/api/v1/exercises/{id}")
+    public GetExerciseInfoResponse getExercises(@PathVariable("id") Long id){
+        Exercise exercise = exerciseService.findOne(id);
+        if (exercise == null) {
+            throw new IllegalArgumentException("No such exercise.");
+        }
+
+        List<WorkoutSet> lastSets = exerciseService.findWorkoutSetsInLastSession(id);
+        return GetExerciseInfoResponse.createFromExerciseAndSets(exercise, lastSets);
     }
 
     /**
@@ -83,7 +70,7 @@ public class ExerciseApiController {
      * @param request name, type, equip
      * @return id and name of new exercise (exception when name already exists)
      */
-    @PostMapping("/api/v1/exercises/add")
+    @PostMapping("/api/v1/exercises")
     public DefaultExerciseResponse saveExerciseV1(@RequestBody @Valid CreateExerciseRequest request) {
         Exercise exercise = Exercise.createExercise(request.getName(),
                 ExerciseType.valueOf(request.getType().toUpperCase()),
@@ -107,6 +94,28 @@ public class ExerciseApiController {
         return new DefaultExerciseResponse(exercise.getId(), exercise.getName());
     }
 
+    // For now, DELETE request is not allowed.
+
+    /**
+     * Get all exercise types
+     * @return list of exercise types name
+     */
+    @GetMapping("/api/v1/exercises/types")
+    public Result<List<String>> getExerciseTypes() {
+        List<String> types = ExerciseType.names();
+        return new Result<>(types);
+    }
+
+    /**
+     * Get all exercise equipments
+     * @return list of exercise equipments name
+     */
+    @GetMapping("/api/v1/exercises/equips")
+    public Result<List<String>> getExerciseEquips() {
+        List<String> equips = ExerciseEquip.names();
+        return new Result<>(equips);
+    }
+
     @Data
     @AllArgsConstructor
     private static class Result<T> {
@@ -114,7 +123,52 @@ public class ExerciseApiController {
     }
 
     @Data
-    private static class CreateExerciseRequest {
+    @AllArgsConstructor
+    private static class DefaultExerciseResponse {
+        private Long id;
+        private String name;
+    }
+
+    @Data
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    private static class GetExerciseInfoResponse {
+        private final Long id;
+        private final String name;
+        private final ExerciseType type;
+        private final ExerciseEquip equip;
+        private final List<WorkoutSetResponse> lastWorkoutSets;
+
+        public static GetExerciseInfoResponse createFromExerciseAndSets(Exercise exercise, List<WorkoutSet> sets) {
+            return new GetExerciseInfoResponse(
+                    exercise.getId(),
+                    exercise.getName(),
+                    exercise.getType(),
+                    exercise.getEquip(),
+                    WorkoutSetResponse.createFromWorkoutSets(sets)
+            );
+        }
+    }
+
+    @Data
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    private static class WorkoutSetResponse {
+        private final LocalDateTime lastRecordDate;
+        private final Integer lastWeight;
+        private final Integer lastReps;
+
+        public static WorkoutSetResponse createFromWorkoutSet(WorkoutSet set) {
+            return new WorkoutSetResponse(set.getCreatedDate(), set.getWeight(), set.getReps());
+        }
+
+        public static List<WorkoutSetResponse> createFromWorkoutSets(List<WorkoutSet> sets) {
+            List<WorkoutSetResponse> responses = new ArrayList<>();
+            sets.forEach(s -> responses.add(createFromWorkoutSet(s)));
+            return responses;
+        }
+    }
+
+    @Data
+    static class CreateExerciseRequest {
         @NotEmpty
         private String name;
 
@@ -126,39 +180,8 @@ public class ExerciseApiController {
     }
 
     @Data
-    @AllArgsConstructor
-    private static class DefaultExerciseResponse {
-        private Long id;
-        private String name;
-    }
-
-    @Data
-    private static class UpdateExerciseRequest {
+    static class UpdateExerciseRequest {
         @NotEmpty
         private String name;
-    }
-
-    @Data
-    private static class GetExerciseInfoRequest {
-        @NotEmpty
-        private String name;
-    }
-
-    @Data
-    @RequiredArgsConstructor
-    private static class GetExerciseInfoResponse {
-        private final Long id;
-        private final String name;
-        private final ExerciseType type;
-        private final ExerciseEquip equip;
-        private final List<WorkoutSetResponse> workoutSetResponses = new ArrayList<WorkoutSetResponse>();
-    }
-
-    @Data
-    @RequiredArgsConstructor
-    private static class WorkoutSetResponse {
-        private final LocalDateTime lastRecordDate;
-        private final Integer lastWeight;
-        private final Integer lastReps;
     }
 }
