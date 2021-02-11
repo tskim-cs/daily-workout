@@ -8,6 +8,7 @@ import workout.dailyworkout.domain.workout.WorkoutSession;
 import workout.dailyworkout.domain.workout.WorkoutSet;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,10 +31,15 @@ public class JPAWorkoutRepository implements WorkoutRepository {
     // TODO - More precise query required.
     @Override
     public WorkoutSession findLastSessionWithExercise(Exercise exercise) {
-        WorkoutExercise workoutExercise = em.createQuery("select e from WorkoutExercise e where e.exercise = :exercise order by e.id desc", WorkoutExercise.class)
-                .setParameter("exercise", exercise)
-                .getSingleResult();
-        return workoutExercise == null ? null : workoutExercise.getSession();
+        WorkoutExercise workoutExercise;
+        try {
+            workoutExercise = em.createQuery("select e from WorkoutExercise e where e.exercise = :exercise order by e.id desc", WorkoutExercise.class)
+                    .setParameter("exercise", exercise)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+        return workoutExercise.getSession();
     }
 
     @Override
