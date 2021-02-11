@@ -1,10 +1,9 @@
 package workout.dailyworkout.service;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.annotation.DirtiesContext;
 import workout.dailyworkout.domain.Exercise;
 import workout.dailyworkout.domain.ExerciseEquip;
 import workout.dailyworkout.domain.ExerciseType;
@@ -16,11 +15,10 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class WorkoutServiceTest {
 
     @Autowired
@@ -65,17 +63,7 @@ public class WorkoutServiceTest {
 
         // Check session identical
         assertEquals(1, workoutRepository.findAllSessions().size());
-        assertEquals(sessionId, workoutRepository.findAllSessions().get(0).getId());
-        assertEquals(workoutRepository.findSessionById(sessionId), workoutRepository.findAllSessions().get(0));
-
-        for (WorkoutSet set : session.getSets()) {
-            // Check session contains set
-            assert(workoutService.findSession(sessionId).getSets().contains(set));
-            assertEquals(workoutService.findSession(sessionId), set.getSession());
-
-            // Check saved on exercise side
-            assert(exerciseService.findWorkoutSetsInLastSession(exerciseId).contains(set));
-        }
+        assertEquals(3, workoutService.findSetsInSession(sessionId).size());
     }
 
     @Test
@@ -96,17 +84,7 @@ public class WorkoutServiceTest {
 
         // Check session identical
         assertEquals(1, workoutRepository.findAllSessions().size());
-        assertEquals(sessionId, workoutRepository.findAllSessions().get(0).getId());
-        assertEquals(workoutRepository.findSessionById(sessionId), workoutRepository.findAllSessions().get(0));
-
-        for (WorkoutSet set : session.getSets()) {
-            // Check session contains set
-            assert(workoutService.findSession(sessionId).getSets().contains(set));
-            assertEquals(workoutService.findSession(sessionId), set.getSession());
-
-            // Check saved on exercise side
-            assert(exerciseService.findWorkoutSetsInLastSession(exerciseId).contains(set));
-        }
+        assertEquals(3, workoutService.findSetsInSession(sessionId).size());
     }
 
     @Test
@@ -201,7 +179,7 @@ public class WorkoutServiceTest {
         // Check saved on exercise side
         assert(exerciseService.findWorkoutSetsInLastSession(exerciseId).isEmpty());
     }
-    
+
     @Test
     public void removeSet() throws Exception {
         // Given
@@ -225,13 +203,13 @@ public class WorkoutServiceTest {
         assertEquals(2, workoutService.findSetsInSession(sessionId).size());
         assertEquals(2, exerciseService.findWorkoutSetsInLastSession(exerciseId).size());
     }
-    
+
     @Test
     public void getWorkoutSetIdTest() throws Exception {
         // Given
         Long exerciseId = addExercise("squat", ExerciseType.LEGS, ExerciseEquip.BARBELL);
         Long sessionId = workoutService.startSession();
-        
+
         // When
         WorkoutSet set = workoutService.addSetAndReturn(sessionId, exerciseId, 50, 15);
 
