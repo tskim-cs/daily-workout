@@ -26,7 +26,7 @@ public class WorkoutSession {
     private Duration duration = Duration.ZERO;
 
     // [Read-only] Change to this will not be applied to DB.
-    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<WorkoutSet> sets = new ArrayList<>();
 
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)

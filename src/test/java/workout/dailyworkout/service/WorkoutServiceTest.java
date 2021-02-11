@@ -112,7 +112,7 @@ public class WorkoutServiceTest {
 
         // Then
         WorkoutSession session = workoutService.findSession(sessionId);
-        List<WorkoutSet> sets = session.getSets();
+        List<WorkoutSet> sets = workoutService.findSetsInSession(sessionId);
         assertEquals(Duration.between(session.getStartDate(), sets.get(sets.size() - 1).getCreatedDate()), session.getDuration());
     }
 
